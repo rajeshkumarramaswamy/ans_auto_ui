@@ -1,26 +1,27 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useState} from 'react';
 import './App.css';
+import { Menu, Icon } from 'semantic-ui-react'
+import ExcelReader from './components/ExcelReader';
 
 function App() {
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Menu inverted>
+      <Menu.Item header>Ansible</Menu.Item>
+      <Menu.Menu position='right'>
+        <Menu.Item onClick={() => window.location.reload()}>
+          <Icon name='refresh'></Icon>
+        </Menu.Item>
+      </Menu.Menu>
+        </Menu>
+
+      <ExcelReader  />
+
+
     </div>
   );
 }
+
 
 export default App;
