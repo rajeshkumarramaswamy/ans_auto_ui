@@ -10,7 +10,7 @@ import {
   Message,
   Form,
   Icon,
-  Divider,
+  Header, Segment, TransitionablePortal
 } from "semantic-ui-react";
 import _ from 'lodash';
 
@@ -22,20 +22,21 @@ class ExcelReader extends Component {
       data: [],
       cols: [],
       filename: '',
-      showForm: true,
-      showError: false
+      hideForm: false,
+      showError: false,
+      disableButton: true
     }
     this.handleFile = this.handleFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
   }
 
   componentDidMount() {
-    this.setState({ showForm: true, showError: false });
+    this.setState({ hideForm: false, showError: false });
   }
 
   handleChange(e) {
     const files = e.target.files;
-    if (files && files[0]) this.setState({ file: files[0], filename: files[0].name });
+    if (files && files[0]) this.setState({ file: files[0], filename: files[0].name, disableButton: false });
   };
 
   handleFile() {
@@ -54,11 +55,12 @@ class ExcelReader extends Component {
       const data = XLSX.utils.sheet_to_json(ws);
       /* Update state */
       if (!_.isEmpty(_.takeWhile(data, 'Module'))) {
-        this.setState({ data: data, showForm: false,cols: make_cols(ws['!ref']) }, () => {
-          console.log(JSON.stringify(this.state.data, null, 2));
+        this.setState({ data: data, hideForm: true,cols: make_cols(ws['!ref']) }, () => {
+          // console.log(JSON.stringify(this.state.data, null, 2));
         });
       } else {
-        this.setState({showError: true})
+        this.setState({showError: true, disableButton: true})
+        return false;
       }
 
     };
@@ -71,17 +73,16 @@ class ExcelReader extends Component {
   }
 
   handleRefresh = () => {
-    this.setState({showForm: true, data: []})
+    this.setState({hideForm: false, data: [], disableButton: true})
   }
 
-  render() {
+  handleClose = () => this.setState({ showError: false, disableButton: true })
 
+  render() {
+    console.log('showfrm', _.isEmpty(this.state.data), this.state.showForm);
     return (
       <>
-      { !this.state.showError ?
-      <>
-      { _.isEmpty(this.state.data) && this.state.showForm ?
-      <Tab.Pane attached={false} className="center-div">
+      <Tab.Pane attached={false} className="center-div" style={{display: !_.isEmpty(this.state.data) && this.state.hideForm ? 'None' : 'block'}}>
             <Message>Upload files to convert Excel data to YAML or JSON.</Message>
             <Form onSubmit={this.onFormSubmit}>
               <Form.Field>
@@ -106,13 +107,25 @@ class ExcelReader extends Component {
                   readOnly
                   value={this.state.filename}
                 />
-                <Button style={{ marginTop: "20px" }} type="submit" onClick={this.handleFile}>
+                <Button primary style={{ marginTop: "20px" }} type="submit" onClick={this.handleFile} disabled={this.state.disableButton}>
                   Process
                 </Button>
               </Form.Field>
             </Form>
-          </Tab.Pane>: null
-      }
+            <TransitionablePortal onClose={this.handleClose} open={this.state.showError}>
+          <Segment style={{ position: 'inherit', top: '40%', zIndex: 1000 }} color='red' inverted>
+            <Header>Unsupported file format or columns in sheet</Header>
+            <p>Make sure the columns are Modules, Parameters and Choices</p>
+            <p>Click any where to continue..!</p>
+          </Segment>
+          {/* <Button
+                content='Close Portal'
+                // negative
+                onClick={this.handleClose}
+              /> */}
+        </TransitionablePortal>
+          </Tab.Pane>
+
         { !_.isEmpty(this.state.data) &&
         <Tab.Pane attached={false} className='center-div'>
         <Grid style={{ marginTop: '40px' }}>
@@ -120,9 +133,6 @@ class ExcelReader extends Component {
         </Grid>
         </Tab.Pane>
         }
-      </>
-      : <div>Error</div>
-      }
       </>
     )
   }

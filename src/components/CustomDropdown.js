@@ -3,7 +3,7 @@ import { Dropdown, Button, Grid } from "semantic-ui-react";
 import _ from 'lodash';
 import YAML from 'json-to-pretty-yaml';
 import ReactJson from 'react-json-view'
-
+import {yamprint} from 'yamprint';
 
 
 class CustomDropdown extends Component {
@@ -55,6 +55,7 @@ class CustomDropdown extends Component {
         let dropdown2 = _.map(_.uniq(_.map(data, x => x['Parameters'])), (val) => ({ 'key': val, 'value': val, 'text': val }))
         let dropdown3 = _.map(_.uniq(_.map(data, x => x['Choices'])), (val) => ({ 'key': val, 'value': val, 'text': val }))
         let yamlText = dataObject ? YAML.stringify(dataObject) : null
+        let yamlTextA = dataObject ? yamprint(dataObject) : null
         console.log('yamlText', dataObject);
         return (
             <Grid.Row columns={2} style={{marginLeft: '100px'}}>
